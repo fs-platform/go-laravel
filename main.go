@@ -13,7 +13,7 @@ func main() {
 func handleFunc(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/about":
-		fmt.Fprint(w, "此博客是用以记录编程笔记，如您有反馈或建议，请联系 "+
+		fmt.Fprint(w, "此博客是用以记录编程笔记，如您有反馈或建议，请联系 Aron "+
 			"<a href=\"Aron.Yao@feisu.com\">251109226@qq.com</a>")
 		break
 	case "/":

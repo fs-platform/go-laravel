@@ -22,6 +22,7 @@ func handleFunc(w http.ResponseWriter, r *http.Request) {
 			"<a href=\"mailto:summer@example.com\">summer@example.com</a>")
 		break
 	default:
+		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprint(w,"<h1>请求页面未找到 :(</h1>")
 	}
 

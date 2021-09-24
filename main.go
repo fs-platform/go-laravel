@@ -1,5 +1,5 @@
 package main
-
+//GO111MODULE=on go get -u github.com/cosmtrek/air
 import (
 	"fmt"
 	"net/http"

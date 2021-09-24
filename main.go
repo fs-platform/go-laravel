@@ -11,6 +11,7 @@ func main() {
 }
 
 func handleFunc(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	switch r.URL.Path {
 	case "/about":
 		fmt.Fprint(w, "此博客是用以记录编程笔记，如您有反馈或建议，请联系 Aron "+

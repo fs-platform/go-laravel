@@ -3,6 +3,7 @@ package main
 //GO111MODULE=on go get -u github.com/cosmtrek/air
 import (
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"html/template"
 	"net/http"
@@ -54,15 +55,15 @@ func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(errors) != 0 {
 		storeUrl, _ := router.Get("articles.store").URL()
-        tmpl, err := template.ParseFiles("resources/views/articles/create.gohtml")
+		tmpl, err := template.ParseFiles("resources/views/articles/create.gohtml")
 		if err != nil {
 			panic(err)
 		}
-		data:= new(ArticlesFormat)
+		data := new(ArticlesFormat)
 		data.URL = storeUrl
 		data.Errors = errors
 		data.Body = body
-		tmpl.Execute(w,data)
+		tmpl.Execute(w, data)
 		return
 	}
 
@@ -78,21 +79,21 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "<h1>请求页面未找到 :(</h1><p>如有疑惑，请联系我们。</p>")
 }
 
-
 type ArticlesFormat struct {
-	Title,Body string
-	URL *url.URL
-	Errors map[string]string
+	Title, Body string
+	URL         *url.URL
+	Errors      map[string]string
 }
+
 func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
 	storeUrl, _ := router.Get("articles.store").URL()
 	tmpl, err := template.ParseFiles("resources/views/articles/create.gohtml")
 	if err != nil {
 		panic(err)
 	}
-	data:= new(ArticlesFormat)
+	data := new(ArticlesFormat)
 	data.URL = storeUrl
-	tmpl.Execute(w,data)
+	tmpl.Execute(w, data)
 }
 
 func articlesShowHandler(w http.ResponseWriter, r *http.Request) {

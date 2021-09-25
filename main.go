@@ -4,8 +4,11 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"html/template"
 	"net/http"
+	"net/url"
 	"strings"
+	"unicode/utf8"
 )
 
 var router *mux.Router = mux.NewRouter()
@@ -43,12 +46,43 @@ func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
 	errors := make(map[string]string)
 	if body == "" {
 		errors["body"] = "body不能为空"
+	} else if utf8.RuneCountInString(body) > 10 {
+		errors["body"] = "body长度要大于10"
 	}
 	if title == "" {
 		errors["title"] = "title不能为空"
 	}
-	if len(errors) != 0{
-		fmt.Fprintf(w, "POST PostForm: %v <br>", errors)
+	if len(errors) != 0 {
+		html := `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>创建文章 —— 我的技术博客</title>
+</head>
+<body>
+    <form action="{{.URL}}" method="post">
+        <p><input type="text" name="title" value="{{.Title}}"></p>
+ 		{{ with .Errors.title }}
+		<p>{{.}}</p>
+		{{end}}
+        <p><textarea name="body" cols="30" rows="10" value="{{.Body}}"></textarea></p>
+		{{ with .Errors.body }}
+		<p>{{.}}</p>
+		{{end}}
+        <p><button type="submit">提交</button></p>
+    </form>
+</body>
+</html>`
+		storeUrl, _ := router.Get("articles.store").URL()
+		tmpl, err := template.New("store-form").Parse(html)
+		if err != nil {
+			panic(err)
+		}
+		data:= new(ArticlesFormat)
+		data.URL = storeUrl
+		data.Errors = errors
+		data.Body = body
+		tmpl.Execute(w,data)
 		return
 	}
 
@@ -64,6 +98,12 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "<h1>请求页面未找到 :(</h1><p>如有疑惑，请联系我们。</p>")
 }
 
+
+type ArticlesFormat struct {
+	Title,Body string
+	URL *url.URL
+	Errors map[string]string
+}
 func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
 	html := `
 <!DOCTYPE html>
@@ -72,7 +112,7 @@ func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
     <title>创建文章 —— 我的技术博客</title>
 </head>
 <body>
-    <form action="%s?data=aron" method="post">
+    <form action="{{.URL}}" method="post">
         <p><input type="text" name="title"></p>
         <p><textarea name="body" cols="30" rows="10"></textarea></p>
         <p><button type="submit">提交</button></p>
@@ -80,7 +120,13 @@ func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
 </body>
 </html>`
 	storeUrl, _ := router.Get("articles.store").URL()
-	fmt.Fprintf(w, html, storeUrl)
+	tmpl, err := template.New("create-form").Parse(html)
+	if err != nil {
+		panic(err)
+	}
+	data:= new(ArticlesFormat)
+	data.URL = storeUrl
+	tmpl.Execute(w,data)
 }
 
 func articlesShowHandler(w http.ResponseWriter, r *http.Request) {

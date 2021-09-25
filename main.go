@@ -2,19 +2,25 @@ package main
 
 //GO111MODULE=on go get -u github.com/cosmtrek/air
 import (
+	"database/sql"
 	"fmt"
+	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"html/template"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 	"unicode/utf8"
 )
 
+var db *sql.DB
 var router *mux.Router = mux.NewRouter()
 
 func main() {
+	initDB()
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
 	router.HandleFunc("/about", aboutHandler).Methods("GET").Name("about")
 	router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
@@ -118,4 +124,31 @@ func removeSlash(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(writer, request)
 	})
+}
+
+func initDB() {
+	config := mysql.Config{
+		User:                 "root",
+		Passwd:               "root",
+		Addr:                 "127.0.0.1:8889",
+		Net:                  "tcp",
+		DBName:               "go_blog",
+		AllowNativePasswords: true,
+	}
+	db, err := sql.Open("mysql", config.FormatDSN())
+	checkError(err)
+	// 设置最大连接数
+	db.SetMaxOpenConns(25)
+	// 设置最大空闲连接数
+	db.SetMaxIdleConns(25)
+	// 设置每个链接的过期时间
+	db.SetConnMaxLifetime(5 * time.Minute)
+	err = db.Ping()
+	checkError(err)
+}
+
+func checkError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
 }

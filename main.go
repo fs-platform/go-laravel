@@ -33,12 +33,25 @@ func aboutHandler(w http.ResponseWriter, r *http.Request) {
 		"<a href=\"mailto:summer@example.com\">Aron.Yao@feisu.com</a>")
 }
 func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
-	if err:=r.ParseForm(); err != nil {
+	if err := r.ParseForm(); err != nil {
 		// 解析错误，这里应该有错误处理
-		fmt.Fprint(w,  "请提供正确的数据！")
+		fmt.Fprint(w, "请提供正确的数据！")
 		return
 	}
 	title := r.PostForm.Get("title")
+	body := r.PostForm.Get("body")
+	errors := make(map[string]string)
+	if body == "" {
+		errors["body"] = "body不能为空"
+	}
+	if title == "" {
+		errors["title"] = "title不能为空"
+	}
+	if len(errors) != 0{
+		fmt.Fprintf(w, "POST PostForm: %v <br>", errors)
+		return
+	}
+
 	fmt.Fprintf(w, "POST PostForm: %v <br>", r.PostForm)
 	fmt.Fprintf(w, "POST Form: %v <br>", r.Form)
 	fmt.Fprintf(w, "title 的值为: %v", title)

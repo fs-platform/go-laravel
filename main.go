@@ -53,28 +53,8 @@ func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
 		errors["title"] = "title不能为空"
 	}
 	if len(errors) != 0 {
-		html := `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>创建文章 —— 我的技术博客</title>
-</head>
-<body>
-    <form action="{{.URL}}" method="post">
-        <p><input type="text" name="title" value="{{.Title}}"></p>
- 		{{ with .Errors.title }}
-		<p>{{.}}</p>
-		{{end}}
-        <p><textarea name="body" cols="30" rows="10" value="{{.Body}}"></textarea></p>
-		{{ with .Errors.body }}
-		<p>{{.}}</p>
-		{{end}}
-        <p><button type="submit">提交</button></p>
-    </form>
-</body>
-</html>`
 		storeUrl, _ := router.Get("articles.store").URL()
-		tmpl, err := template.New("store-form").Parse(html)
+        tmpl, err := template.ParseFiles("resources/views/articles/create.gohtml")
 		if err != nil {
 			panic(err)
 		}
@@ -105,22 +85,8 @@ type ArticlesFormat struct {
 	Errors map[string]string
 }
 func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
-	html := `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>创建文章 —— 我的技术博客</title>
-</head>
-<body>
-    <form action="{{.URL}}" method="post">
-        <p><input type="text" name="title"></p>
-        <p><textarea name="body" cols="30" rows="10"></textarea></p>
-        <p><button type="submit">提交</button></p>
-    </form>
-</body>
-</html>`
 	storeUrl, _ := router.Get("articles.store").URL()
-	tmpl, err := template.New("create-form").Parse(html)
+	tmpl, err := template.ParseFiles("resources/views/articles/create.gohtml")
 	if err != nil {
 		panic(err)
 	}

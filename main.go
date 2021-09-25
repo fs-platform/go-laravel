@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var router = mux.NewRouter()
+var router *mux.Router = mux.NewRouter()
 
 func main() {
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
@@ -33,7 +33,15 @@ func aboutHandler(w http.ResponseWriter, r *http.Request) {
 		"<a href=\"mailto:summer@example.com\">Aron.Yao@feisu.com</a>")
 }
 func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "创建新的文章")
+	if err:=r.ParseForm(); err != nil {
+		// 解析错误，这里应该有错误处理
+		fmt.Fprint(w,  "请提供正确的数据！")
+		return
+	}
+	title := r.PostForm.Get("title")
+	fmt.Fprintf(w, "POST PostForm: %v <br>", r.PostForm)
+	fmt.Fprintf(w, "POST Form: %v <br>", r.Form)
+	fmt.Fprintf(w, "title 的值为: %v", title)
 }
 func articlesIndexHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "访问文章列表")
@@ -51,7 +59,7 @@ func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
     <title>创建文章 —— 我的技术博客</title>
 </head>
 <body>
-    <form action="%s" method="post">
+    <form action="%s?data=aron" method="post">
         <p><input type="text" name="title"></p>
         <p><textarea name="body" cols="30" rows="10"></textarea></p>
         <p><button type="submit">提交</button></p>

@@ -26,7 +26,7 @@ func main() {
 	router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
 	router.HandleFunc("/articles", articlesStoreHandler).Methods("POST").Name("articles.store")
 	router.HandleFunc("/articles/{id:[0-9]+}/edit", articlesEditHandler).Methods("GET").Name("articles.edit")
-	router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("POST").Name("articles.update")
+	router.HandleFunc("/articles/{id:[0-9]+}", articlesUpdateHandler).Methods("POST").Name("articles.update")
 	middlewares := []mux.MiddlewareFunc{
 		setHeaderMiddleware,
 	}
@@ -237,5 +237,36 @@ func getArticleByID(id string) (Article, error) {
 }
 
 func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "更新文章")
+	body := r.PostFormValue("body")
+	title := r.PostFormValue("title")
+	errors := validate(title, body)
+	id := getRouteVariable("id", r)
+	if len(errors) != 0 {
+		tmpl, err := template.ParseFiles("resources/views/articles/edit.gohtml")
+		storeUrl, _ := router.GetRoute("articles.edit").URL("id", id)
+		checkError(err)
+		articleInfo := ArticlesFormat{
+			Body:   body,
+			Title:  title,
+			Errors: errors,
+			URL:    storeUrl,
+		}
+		err = tmpl.Execute(w, articleInfo)
+		checkError(err)
+		return
+	}
+	query := "UPDATE articles SET title=?,body=? WHERE id=?"
+	result, err := db.Exec(query, title, body, id)
+	if err != nil {
+		checkError(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, "500 服务错误")
+	}
+	if n, _ := result.RowsAffected(); n > 0 {
+		showURL, _ := router.Get("articles.show").URL("id", id)
+		http.Redirect(w, r, showURL.String(), http.StatusFound)
+		return
+	} else {
+		fmt.Fprint(w, "没有任何修改")
+	}
 }

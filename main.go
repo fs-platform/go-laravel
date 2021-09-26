@@ -72,10 +72,11 @@ func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
 		tmpl.Execute(w, data)
 		return
 	}
-
-	fmt.Fprintf(w, "POST PostForm: %v <br>", r.PostForm)
-	fmt.Fprintf(w, "POST Form: %v <br>", r.Form)
-	fmt.Fprintf(w, "title 的值为: %v", title)
+	id, err := saveArticleToDB(title, body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Fprintf(w,"数据更新成功id为%d", id)
 }
 func articlesIndexHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "访问文章列表")
@@ -127,6 +128,7 @@ func removeSlash(next http.Handler) http.Handler {
 }
 
 func initDB() {
+	var err error
 	config := mysql.Config{
 		User:                 "root",
 		Passwd:               "root",
@@ -135,7 +137,7 @@ func initDB() {
 		DBName:               "go_blog",
 		AllowNativePasswords: true,
 	}
-	db, err := sql.Open("mysql", config.FormatDSN())
+	db, err = sql.Open("mysql", config.FormatDSN())
 	checkError(err)
 	// 设置最大连接数
 	db.SetMaxOpenConns(25)
@@ -151,4 +153,24 @@ func checkError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func saveArticleToDB(title string, body string) (int64, error) {
+	var (
+		id   int64
+		err  error
+		rs   sql.Result
+		stmt *sql.Stmt
+	)
+	stmt, err = db.Prepare("INSERT INTO articles (title, body) VALUES(?,?)")
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+	rs, err = stmt.Exec(title, body)
+	// 4. 插入成功的话，会返回自增 ID
+	if id, err = rs.LastInsertId(); id > 0 {
+		return id, nil
+	}
+	return 0, err
 }

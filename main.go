@@ -4,9 +4,9 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"go_blog/pkg/databases"
 	"go_blog/pkg/logger"
 	"go_blog/pkg/route"
 	"html/template"
@@ -15,7 +15,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 	"unicode/utf8"
 )
 
@@ -23,9 +22,10 @@ var db *sql.DB
 var router *mux.Router
 
 func main() {
-	initDB()
+	databases.Initialize()
 	route.Initialize()
 	router = route.Router
+	db = databases.DB
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("articles.home")
 	router.HandleFunc("/about", aboutHandler).Methods("GET").Name("about")
 	router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
@@ -173,27 +173,6 @@ func removeSlash(next http.Handler) http.Handler {
 	})
 }
 
-func initDB() {
-	var err error
-	config := mysql.Config{
-		User:                 "root",
-		Passwd:               "root",
-		Addr:                 "127.0.0.1:8889",
-		Net:                  "tcp",
-		DBName:               "go_blog",
-		AllowNativePasswords: true,
-	}
-	db, err = sql.Open("mysql", config.FormatDSN())
-	logger.LogError(err)
-	// 设置最大连接数
-	db.SetMaxOpenConns(25)
-	// 设置最大空闲连接数
-	db.SetMaxIdleConns(25)
-	// 设置每个链接的过期时间
-	db.SetConnMaxLifetime(5 * time.Minute)
-	err = db.Ping()
-	logger.LogError(err)
-}
 
 func saveArticleToDB(title string, body string) (int64, error) {
 	var (

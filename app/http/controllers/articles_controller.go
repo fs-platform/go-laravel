@@ -15,7 +15,22 @@ type ArticlesController struct {
 }
 
 func (*ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
-
+	var (
+		tmp *template.Template
+		err error
+	)
+	tmp, err = template.ParseFiles("resources/views/articles/index.gohtml")
+	logger.LogError(err)
+	articles, err := article.GetAll()
+	fmt.Println(articles)
+	if err != nil {
+		// 数据库错误
+		logger.LogError(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, "500 服务器内部错误")
+	} else {
+		err = tmp.Execute(w, articles)
+	}
 }
 
 func (*ArticlesController) Show(w http.ResponseWriter, r *http.Request) {

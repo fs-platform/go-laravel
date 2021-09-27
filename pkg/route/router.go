@@ -20,3 +20,7 @@ func GetRouteVariable(parameterName string, r *http.Request) string {
 	vars := mux.Vars(r)
 	return vars[parameterName]
 }
+
+func SetRoute(router *mux.Router) {
+	Router = router
+}

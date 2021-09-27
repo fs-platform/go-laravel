@@ -37,30 +37,6 @@ func main() {
 	http.ListenAndServe(":3000", removeSlash(router))
 }
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	var (
-		err      error
-		tmp      *template.Template
-		rows     *sql.Rows
-		articles []Article
-	)
-	tmp, err = template.ParseFiles("resources/views/articles/index.gohtml")
-	logger.LogError(err)
-	query := "SELECT * FROM articles"
-	rows, err = db.Query(query)
-	defer rows.Close()
-	logger.LogError(err)
-	for rows.Next() {
-		var article Article
-		err := rows.Scan(&article.ID, &article.Title, &article.Body)
-		logger.LogError(err)
-		articles = append(articles, article)
-	}
-	err = rows.Err()
-	logger.LogError(err)
-	err = tmp.Execute(w, articles)
-	logger.LogError(err)
-}
 
 
 func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
@@ -235,15 +211,6 @@ func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Fprint(w, "没有任何修改")
 	}
-}
-
-func (a Article) Link(name string) string {
-	showUrl, err := router.Get(name).URL("id", strconv.Itoa(a.ID))
-	if err != nil {
-		logger.LogError(err)
-		return ""
-	}
-	return showUrl.String()
 }
 
 // Delete 方法用以从数据库中删除单条记录

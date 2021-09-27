@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"database/sql"
 	"fmt"
 	"go_blog/app/models/article"
 	"go_blog/pkg/logger"
@@ -105,7 +106,39 @@ func (*ArticlesController) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (*ArticlesController) Delete(w http.ResponseWriter, r *http.Request) {
-
+	id := route.GetRouteVariable("id", r)
+	articleInfo, err := article.Get(id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Println("文章未找到")
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Println(err)
+		}
+	} else {
+		idInt, _ := strconv.Atoi(id)
+		_article := &article.Article{
+			ID:    idInt,
+			Body:  articleInfo.Body,
+			Title: articleInfo.Title,
+		}
+		affect, err := _article.Delete()
+		if err != nil {
+			logger.LogError(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Println("服务内部错误")
+		} else {
+			if affect > 0 {
+				indexURL := route.RouteName2URL("articles.home")
+				http.Redirect(w, r, indexURL, http.StatusFound)
+				return
+			} else {
+				w.WriteHeader(http.StatusNotFound)
+				fmt.Fprint(w, "404 文章未找到")
+			}
+		}
+	}
 }
 
 func (*ArticlesController) Create(w http.ResponseWriter, r *http.Request) {
@@ -129,7 +162,7 @@ func (*ArticlesController) Store(w http.ResponseWriter, r *http.Request) {
 	title := r.PostForm.Get("title")
 	body := r.PostForm.Get("body")
 	errors := validateArticleFormData(title, body)
-
+	fmt.Println(errors)
 	if len(errors) != 0 {
 		storeUrl := route.RouteName2URL("articles.store")
 		tmpl, err := template.ParseFiles("resources/views/articles/create.gohtml")

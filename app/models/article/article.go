@@ -5,8 +5,6 @@ import (
 	"strconv"
 )
 
-
-
 func (article Article) Link(name string) string {
-	return route.RouteName2URL("articles.show", "id", strconv.FormatInt(int64(article.ID), 10))
+	return route.RouteName2URL(name, "id", strconv.FormatInt(int64(article.ID), 10))
 }

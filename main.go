@@ -6,10 +6,10 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"go_blog/app/http/middlewares"
 	"go_blog/bootstrap"
 	"go_blog/pkg/databases"
 	"net/http"
-	"strings"
 )
 
 var db *sql.DB
@@ -20,14 +20,9 @@ func main() {
 	router = bootstrap.SetupRoute()
 	bootstrap.SetupDB()
 	db = databases.DB
-	middlewares := []mux.MiddlewareFunc{
-		setHeaderMiddleware,
-	}
-	// 中间件：强制内容类型为 HTML
-	router.Use(middlewares...)
 	//自定义404
 	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
-	http.ListenAndServe(":3000", removeSlash(router))
+	http.ListenAndServe(":3000", middlewares.RemoveSlash(router))
 }
 
 
@@ -42,14 +37,5 @@ func setHeaderMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		// 2. 继续处理请求
 		next.ServeHTTP(w, r)
-	})
-}
-
-func removeSlash(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if request.URL.Path != "/" {
-			request.URL.Path = strings.TrimSuffix(request.URL.Path, "/")
-		}
-		next.ServeHTTP(writer, request)
 	})
 }

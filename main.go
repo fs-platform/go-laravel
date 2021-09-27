@@ -7,6 +7,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"go_blog/route"
 	"html/template"
 	"log"
 	"net/http"
@@ -18,10 +19,12 @@ import (
 )
 
 var db *sql.DB
-var router *mux.Router = mux.NewRouter()
+var router *mux.Router
 
 func main() {
 	initDB()
+	route.Initialize()
+	router = route.Router
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("articles.home")
 	router.HandleFunc("/about", aboutHandler).Methods("GET").Name("about")
 	router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
@@ -112,7 +115,7 @@ type ArticlesFormat struct {
 }
 
 func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
-	storeUrl, _ := router.Get("articles.store").URL()
+	storeUrl, _ := router.GetRoute("articles.store").URL()
 	tmpl, err := template.ParseFiles("resources/views/articles/create.gohtml")
 	if err != nil {
 		panic(err)
@@ -130,7 +133,7 @@ type Article struct {
 }
 
 func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
-	id := getRouteVariable("id", r)
+	id := route.GetRouteVariable("id", r)
 	article, err := getArticleByID(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -222,7 +225,7 @@ func articlesEditHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	id := getRouteVariable("id", r)
+	id := route.GetRouteVariable("id", r)
 	editUrl, _ := router.GetRoute("articles.update").URL("id", id)
 	article, _ := getArticleByID(id)
 	data := ArticlesFormat{
@@ -248,11 +251,6 @@ func validate(title string, body string) map[string]string {
 	return errors
 }
 
-func getRouteVariable(parameterName string, r *http.Request) string {
-	vars := mux.Vars(r)
-	return vars[parameterName]
-}
-
 func getArticleByID(id string) (Article, error) {
 	article := Article{}
 	query := "SELECT * FROM articles WHERE id = ?"
@@ -264,7 +262,7 @@ func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	body := r.PostFormValue("body")
 	title := r.PostFormValue("title")
 	errors := validate(title, body)
-	id := getRouteVariable("id", r)
+	id := route.GetRouteVariable("id", r)
 	if len(errors) != 0 {
 		tmpl, err := template.ParseFiles("resources/views/articles/edit.gohtml")
 		storeUrl, _ := router.GetRoute("articles.edit").URL("id", id)
@@ -321,7 +319,7 @@ func (a Article) Delete() (rowsAffected int64, err error) {
 }
 
 func articlesDeleteHandler(w http.ResponseWriter, r *http.Request) {
-	id := getRouteVariable("id", r)
+	id := route.GetRouteVariable("id", r)
 	articleInfo, err := getArticleByID(id)
 	if err != nil {
 		if err == sql.ErrNoRows {

@@ -25,6 +25,7 @@ var router *mux.Router
 func main() {
 	databases.Initialize()
 	router = bootstrap.SetupRoute()
+	bootstrap.SetupDB()
 	db = databases.DB
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("articles.home")
 	router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")

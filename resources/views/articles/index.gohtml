@@ -7,9 +7,18 @@
 <ul>
     {{range $key, $article:=.}}
         <li>
-            <a href="{{$article.Link}}">标题:{{$article.Title}}</a>
+            <a href="{{$article.Link "articles.show"}}">标题:{{$article.Title}}</a>
+            <span onclick="deleteArticle({{$article.ID}},{{$article.Link "articles.delete"}})">删除</span>
         </li>
     {{end}}
 </ul>
 </body>
 </html>
+<script type="text/javascript">
+    function deleteArticle(id, link) {
+        var isDelete = confirm("是否删除")
+        if (isDelete) {
+            window.location.href = link
+        }
+    }
+</script>

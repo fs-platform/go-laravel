@@ -22,7 +22,7 @@ var router *mux.Router = mux.NewRouter()
 
 func main() {
 	initDB()
-	router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
+	router.HandleFunc("/", homeHandler).Methods("GET").Name("articles.home")
 	router.HandleFunc("/about", aboutHandler).Methods("GET").Name("about")
 	router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
 	router.HandleFunc("/articles", articlesStoreHandler).Methods("POST").Name("articles.store")
@@ -31,6 +31,7 @@ func main() {
 	middlewares := []mux.MiddlewareFunc{
 		setHeaderMiddleware,
 	}
+	router.HandleFunc("/articles/{id:[0-9]+}/delete", articlesDeleteHandler).Methods("GET").Name("articles.delete")
 	router.HandleFunc("/articles/create", articlesCreateHandler).Methods("GET").Name("articles.create")
 	// 中间件：强制内容类型为 HTML
 	router.Use(middlewares...)
@@ -294,11 +295,56 @@ func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a Article) Link() string {
-	showUrl, err := router.Get("articles.show").URL("id", strconv.Itoa(a.ID))
+func (a Article) Link(name string) string {
+	showUrl, err := router.Get(name).URL("id", strconv.Itoa(a.ID))
 	if err != nil {
 		checkError(err)
 		return ""
 	}
 	return showUrl.String()
+}
+
+// Delete 方法用以从数据库中删除单条记录
+func (a Article) Delete() (rowsAffected int64, err error) {
+	rs, err := db.Exec("DELETE FROM articles WHERE id = " + strconv.Itoa(a.ID))
+
+	if err != nil {
+		return 0, err
+	}
+
+	// √ 删除成功，跳转到文章详情页
+	if n, _ := rs.RowsAffected(); n > 0 {
+		return n, nil
+	}
+
+	return 0, nil
+}
+
+func articlesDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	id := getRouteVariable("id", r)
+	articleInfo, err := getArticleByID(id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Println("文章未找到")
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Println("服务内部错误")
+		}
+	} else {
+		rows, err := articleInfo.Delete()
+		if err != nil {
+			checkError(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Println("服务内部错误")
+		} else {
+			if rows > 0 {
+				indexURL, _ := router.Get("articles.home").URL()
+				http.Redirect(w, r, indexURL.String(), http.StatusFound)
+			} else {
+				w.WriteHeader(http.StatusNotFound)
+				fmt.Fprint(w, "404 文章未找到")
+			}
+		}
+	}
 }

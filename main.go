@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -37,8 +38,30 @@ func main() {
 	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
 	http.ListenAndServe(":3000", removeSlash(router))
 }
+
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "<h1>Hello, 欢迎来到 goblog！</h1>")
+	var (
+		err      error
+		tmp      *template.Template
+		rows     *sql.Rows
+		articles []Article
+	)
+	tmp, err = template.ParseFiles("resources/views/articles/index.gohtml")
+	checkError(err)
+	query := "SELECT * FROM articles"
+	rows, err = db.Query(query)
+	defer rows.Close()
+	checkError(err)
+	for rows.Next() {
+		var article Article
+		err := rows.Scan(&article.ID, &article.Title, &article.Body)
+		checkError(err)
+		articles = append(articles, article)
+	}
+	err = rows.Err()
+	checkError(err)
+	err = tmp.Execute(w, articles)
+	checkError(err)
 }
 func aboutHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "此博客是用以记录编程笔记，如您有反馈或建议，请联系 "+
@@ -269,4 +292,13 @@ func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Fprint(w, "没有任何修改")
 	}
+}
+
+func (a Article) Link() string {
+	showUrl, err := router.Get("articles.show").URL("id", strconv.Itoa(a.ID))
+	if err != nil {
+		checkError(err)
+		return ""
+	}
+	return showUrl.String()
 }

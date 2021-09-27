@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>编辑文章 —— 我的技术博客</title>
+</head>
+<body>
+<ul>
+    {{range $key, $article:=.}}
+        <li>
+            <a href="{{$article.Link}}">标题:{{$article.Title}}</a>
+        </li>
+    {{end}}
+</ul>
+</body>
+</html>

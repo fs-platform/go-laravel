@@ -38,39 +38,6 @@ func main() {
 }
 
 
-
-func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		// 解析错误，这里应该有错误处理
-		fmt.Fprint(w, "请提供正确的数据！")
-		return
-	}
-	title := r.PostForm.Get("title")
-	body := r.PostForm.Get("body")
-	errors := validate(title, body)
-
-	if len(errors) != 0 {
-		storeUrl, _ := router.Get("articles.store").URL()
-		tmpl, err := template.ParseFiles("resources/views/articles/create.gohtml")
-		if err != nil {
-			panic(err)
-		}
-		data := new(ArticlesFormat)
-		data.URL = storeUrl
-		data.Errors = errors
-		data.Body = body
-		tmpl.Execute(w, data)
-		return
-	}
-	id, err := saveArticleToDB(title, body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Fprintf(w, "数据更新成功id为%d", id)
-}
-func articlesIndexHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "访问文章列表")
-}
 func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 	fmt.Fprint(w, "<h1>请求页面未找到 :(</h1><p>如有疑惑，请联系我们。</p>")
@@ -82,17 +49,6 @@ type ArticlesFormat struct {
 	Errors      map[string]string
 }
 
-func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
-	storeUrl, _ := router.GetRoute("articles.store").URL()
-	tmpl, err := template.ParseFiles("resources/views/articles/create.gohtml")
-	if err != nil {
-		panic(err)
-	}
-	data := new(ArticlesFormat)
-	data.URL = storeUrl
-	err = tmpl.Execute(w, data)
-	logger.LogError(err)
-}
 
 type Article struct {
 	ID    int

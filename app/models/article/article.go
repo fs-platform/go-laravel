@@ -7,6 +7,6 @@ import (
 
 
 
-func (a Article) Link(name string) string {
-	return route.RouteName2URL("articles.show", "id", strconv.FormatInt(int64(a.ID), 10))
+func (article Article) Link(name string) string {
+	return route.RouteName2URL("articles.show", "id", strconv.FormatInt(int64(article.ID), 10))
 }

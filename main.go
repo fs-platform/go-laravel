@@ -6,6 +6,7 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"go_blog/bootstrap"
 	"go_blog/pkg/databases"
 	"go_blog/pkg/logger"
 	"go_blog/pkg/route"
@@ -23,11 +24,9 @@ var router *mux.Router
 
 func main() {
 	databases.Initialize()
-	route.Initialize()
-	router = route.Router
+	router = bootstrap.SetupRoute()
 	db = databases.DB
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("articles.home")
-	router.HandleFunc("/about", aboutHandler).Methods("GET").Name("about")
 	router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
 	router.HandleFunc("/articles", articlesStoreHandler).Methods("POST").Name("articles.store")
 	router.HandleFunc("/articles/{id:[0-9]+}/edit", articlesEditHandler).Methods("GET").Name("articles.edit")
@@ -68,10 +67,8 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	err = tmp.Execute(w, articles)
 	logger.LogError(err)
 }
-func aboutHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "此博客是用以记录编程笔记，如您有反馈或建议，请联系 "+
-		"<a href=\"mailto:summer@example.com\">Aron.Yao@feisu.com</a>")
-}
+
+
 func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		// 解析错误，这里应该有错误处理

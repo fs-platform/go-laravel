@@ -2,6 +2,12 @@ package controllers
 
 import (
 	"fmt"
+	"go_blog/app/models/article"
+	"go_blog/pkg/logger"
+	"go_blog/pkg/route"
+	"gorm.io/gorm"
+	"html/template"
+	"log"
 	"net/http"
 )
 
@@ -13,7 +19,27 @@ func (*ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (*ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
-
+	id := route.GetRouteVariable("id", r)
+	data, err := article.Get(id)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// 3.1 数据未找到
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, "404 文章未找到")
+			return
+		} else {
+			// 3.2 数据库错误
+			logger.LogError(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, "500 服务器内部错误")
+			return
+		}
+	}
+	tmpl, err := template.ParseFiles("resources/views/articles/show.gohtml")
+	if err != nil {
+		log.Fatal(err)
+	}
+	tmpl.Execute(w, data)
 }
 
 func (*ArticlesController) Update(w http.ResponseWriter, r *http.Request) {

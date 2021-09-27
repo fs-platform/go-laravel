@@ -2,11 +2,11 @@ package routes
 
 import (
 	"github.com/gorilla/mux"
-	controllers2 "go_blog/app/http/controllers"
+	"go_blog/app/http/controllers"
 )
 
 func RegisterWebRouter(router *mux.Router) *mux.Router {
-	ArticleController := new(controllers2.ArticlesController)
+	ArticleController := new(controllers.ArticlesController)
 	router.HandleFunc("/", ArticleController.Index).Methods("GET").Name("")
 	router.HandleFunc("/articles/{id:[0-9]+}", ArticleController.Show).Methods("GET").Name("articles.show")
 	router.HandleFunc("/articles", ArticleController.Store).Methods("POST").Name("articles.store")

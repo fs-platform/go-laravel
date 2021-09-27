@@ -27,16 +27,9 @@ func main() {
 	router = bootstrap.SetupRoute()
 	bootstrap.SetupDB()
 	db = databases.DB
-	router.HandleFunc("/", homeHandler).Methods("GET").Name("articles.home")
-	router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
-	router.HandleFunc("/articles", articlesStoreHandler).Methods("POST").Name("articles.store")
-	router.HandleFunc("/articles/{id:[0-9]+}/edit", articlesEditHandler).Methods("GET").Name("articles.edit")
-	router.HandleFunc("/articles/{id:[0-9]+}", articlesUpdateHandler).Methods("POST").Name("articles.update")
 	middlewares := []mux.MiddlewareFunc{
 		setHeaderMiddleware,
 	}
-	router.HandleFunc("/articles/{id:[0-9]+}/delete", articlesDeleteHandler).Methods("GET").Name("articles.delete")
-	router.HandleFunc("/articles/create", articlesCreateHandler).Methods("GET").Name("articles.create")
 	// 中间件：强制内容类型为 HTML
 	router.Use(middlewares...)
 	//自定义404
@@ -131,27 +124,6 @@ type Article struct {
 	Title string
 }
 
-func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
-	id := route.GetRouteVariable("id", r)
-	article, err := getArticleByID(id)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// 3.1 数据未找到
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprint(w, "404 文章未找到")
-		} else {
-			// 3.2 数据库错误
-			logger.LogError(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, "500 服务器内部错误")
-		}
-	}
-	tmpl, err := template.ParseFiles("resources/views/articles/show.gohtml")
-	if err != nil {
-		log.Fatal(err)
-	}
-	tmpl.Execute(w, article)
-}
 
 func setHeaderMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

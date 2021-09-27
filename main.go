@@ -7,7 +7,8 @@ import (
 	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
-	"go_blog/route"
+	"go_blog/pkg/logger"
+	"go_blog/pkg/route"
 	"html/template"
 	"log"
 	"net/http"
@@ -51,21 +52,21 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		articles []Article
 	)
 	tmp, err = template.ParseFiles("resources/views/articles/index.gohtml")
-	checkError(err)
+	logger.LogError(err)
 	query := "SELECT * FROM articles"
 	rows, err = db.Query(query)
 	defer rows.Close()
-	checkError(err)
+	logger.LogError(err)
 	for rows.Next() {
 		var article Article
 		err := rows.Scan(&article.ID, &article.Title, &article.Body)
-		checkError(err)
+		logger.LogError(err)
 		articles = append(articles, article)
 	}
 	err = rows.Err()
-	checkError(err)
+	logger.LogError(err)
 	err = tmp.Execute(w, articles)
-	checkError(err)
+	logger.LogError(err)
 }
 func aboutHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "此博客是用以记录编程笔记，如您有反馈或建议，请联系 "+
@@ -123,7 +124,7 @@ func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
 	data := new(ArticlesFormat)
 	data.URL = storeUrl
 	err = tmpl.Execute(w, data)
-	checkError(err)
+	logger.LogError(err)
 }
 
 type Article struct {
@@ -142,7 +143,7 @@ func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprint(w, "404 文章未找到")
 		} else {
 			// 3.2 数据库错误
-			checkError(err)
+			logger.LogError(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprint(w, "500 服务器内部错误")
 		}
@@ -183,7 +184,7 @@ func initDB() {
 		AllowNativePasswords: true,
 	}
 	db, err = sql.Open("mysql", config.FormatDSN())
-	checkError(err)
+	logger.LogError(err)
 	// 设置最大连接数
 	db.SetMaxOpenConns(25)
 	// 设置最大空闲连接数
@@ -191,13 +192,7 @@ func initDB() {
 	// 设置每个链接的过期时间
 	db.SetConnMaxLifetime(5 * time.Minute)
 	err = db.Ping()
-	checkError(err)
-}
-
-func checkError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
+	logger.LogError(err)
 }
 
 func saveArticleToDB(title string, body string) (int64, error) {
@@ -235,7 +230,7 @@ func articlesEditHandler(w http.ResponseWriter, r *http.Request) {
 		URL:    editUrl,
 	}
 	err = tmpl.Execute(w, data)
-	checkError(err)
+	logger.LogError(err)
 }
 
 func validate(title string, body string) map[string]string {
@@ -266,7 +261,7 @@ func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	if len(errors) != 0 {
 		tmpl, err := template.ParseFiles("resources/views/articles/edit.gohtml")
 		storeUrl, _ := router.GetRoute("articles.edit").URL("id", id)
-		checkError(err)
+		logger.LogError(err)
 		articleInfo := ArticlesFormat{
 			Body:   body,
 			Title:  title,
@@ -274,13 +269,13 @@ func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
 			URL:    storeUrl,
 		}
 		err = tmpl.Execute(w, articleInfo)
-		checkError(err)
+		logger.LogError(err)
 		return
 	}
 	query := "UPDATE articles SET title=?,body=? WHERE id=?"
 	result, err := db.Exec(query, title, body, id)
 	if err != nil {
-		checkError(err)
+		logger.LogError(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(w, "500 服务错误")
 	}
@@ -296,7 +291,7 @@ func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
 func (a Article) Link(name string) string {
 	showUrl, err := router.Get(name).URL("id", strconv.Itoa(a.ID))
 	if err != nil {
-		checkError(err)
+		logger.LogError(err)
 		return ""
 	}
 	return showUrl.String()
@@ -332,7 +327,7 @@ func articlesDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		rows, err := articleInfo.Delete()
 		if err != nil {
-			checkError(err)
+			logger.LogError(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Println("服务内部错误")
 		} else {

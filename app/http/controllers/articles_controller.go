@@ -9,6 +9,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 	"unicode/utf8"
 )
 
@@ -66,7 +67,41 @@ func (*ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
 }
 
 func (*ArticlesController) Update(w http.ResponseWriter, r *http.Request) {
-
+	body := r.PostFormValue("body")
+	title := r.PostFormValue("title")
+	errors := validateArticleFormData(title, body)
+	id := route.GetRouteVariable("id", r)
+	if len(errors) != 0 {
+		tmpl, err := template.ParseFiles("resources/views/articles/edit.gohtml")
+		storeUrl := route.RouteName2URL("articles.update", "id", id)
+		articleInfo := ArticlesFormData{
+			Body:   body,
+			Title:  title,
+			Errors: errors,
+			URL:    storeUrl,
+		}
+		err = tmpl.Execute(w, articleInfo)
+		logger.LogError(err)
+		return
+	}
+	idInt, _ := strconv.Atoi(id)
+	_article := &article.Article{
+		Title: title,
+		Body:  body,
+		ID:    idInt,
+	}
+	affect, err := _article.Update()
+	if err != nil {
+		fmt.Fprint(w, "文章更新失败")
+		return
+	}
+	if affect > 0 {
+		showURL := route.RouteName2URL("articles.show", "id", id)
+		http.Redirect(w, r, showURL, http.StatusFound)
+		return
+	} else {
+		fmt.Fprint(w, "没有任何修改")
+	}
 }
 
 func (*ArticlesController) Delete(w http.ResponseWriter, r *http.Request) {
@@ -121,7 +156,21 @@ func (*ArticlesController) Store(w http.ResponseWriter, r *http.Request) {
 }
 
 func (*ArticlesController) Edit(w http.ResponseWriter, r *http.Request) {
-
+	tmpl, err := template.ParseFiles("resources/views/articles/edit.gohtml")
+	if err != nil {
+		log.Fatal(err)
+	}
+	id := route.GetRouteVariable("id", r)
+	editUrl := route.RouteName2URL("articles.update", "id", id)
+	article, _ := article.Get(id)
+	data := ArticlesFormData{
+		Title:  article.Title,
+		Body:   article.Body,
+		Errors: map[string]string{},
+		URL:    editUrl,
+	}
+	err = tmpl.Execute(w, data)
+	logger.LogError(err)
 }
 
 func (*ArticlesController) About(w http.ResponseWriter, r *http.Request) {

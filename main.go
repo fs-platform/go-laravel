@@ -10,8 +10,6 @@ import (
 	"go_blog/pkg/databases"
 	"go_blog/pkg/logger"
 	"go_blog/pkg/route"
-	"html/template"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -76,44 +74,6 @@ func removeSlash(next http.Handler) http.Handler {
 }
 
 
-func saveArticleToDB(title string, body string) (int64, error) {
-	var (
-		id   int64
-		err  error
-		rs   sql.Result
-		stmt *sql.Stmt
-	)
-	stmt, err = db.Prepare("INSERT INTO articles (title, body) VALUES(?,?)")
-	if err != nil {
-		return 0, err
-	}
-	defer stmt.Close()
-	rs, err = stmt.Exec(title, body)
-	// 4. 插入成功的话，会返回自增 ID
-	if id, err = rs.LastInsertId(); id > 0 {
-		return id, nil
-	}
-	return 0, err
-}
-
-func articlesEditHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("resources/views/articles/edit.gohtml")
-	if err != nil {
-		log.Fatal(err)
-	}
-	id := route.GetRouteVariable("id", r)
-	editUrl, _ := router.GetRoute("articles.update").URL("id", id)
-	article, _ := getArticleByID(id)
-	data := ArticlesFormat{
-		Title:  article.Title,
-		Body:   article.Body,
-		Errors: map[string]string{},
-		URL:    editUrl,
-	}
-	err = tmpl.Execute(w, data)
-	logger.LogError(err)
-}
-
 func validate(title string, body string) map[string]string {
 	errors := make(map[string]string)
 	if body == "" {
@@ -132,41 +92,6 @@ func getArticleByID(id string) (Article, error) {
 	query := "SELECT * FROM articles WHERE id = ?"
 	err := db.QueryRow(query, id).Scan(&article.ID, &article.Title, &article.Body)
 	return article, err
-}
-
-func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
-	body := r.PostFormValue("body")
-	title := r.PostFormValue("title")
-	errors := validate(title, body)
-	id := route.GetRouteVariable("id", r)
-	if len(errors) != 0 {
-		tmpl, err := template.ParseFiles("resources/views/articles/edit.gohtml")
-		storeUrl, _ := router.GetRoute("articles.edit").URL("id", id)
-		logger.LogError(err)
-		articleInfo := ArticlesFormat{
-			Body:   body,
-			Title:  title,
-			Errors: errors,
-			URL:    storeUrl,
-		}
-		err = tmpl.Execute(w, articleInfo)
-		logger.LogError(err)
-		return
-	}
-	query := "UPDATE articles SET title=?,body=? WHERE id=?"
-	result, err := db.Exec(query, title, body, id)
-	if err != nil {
-		logger.LogError(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(w, "500 服务错误")
-	}
-	if n, _ := result.RowsAffected(); n > 0 {
-		showURL, _ := router.Get("articles.show").URL("id", id)
-		http.Redirect(w, r, showURL.String(), http.StatusFound)
-		return
-	} else {
-		fmt.Fprint(w, "没有任何修改")
-	}
 }
 
 // Delete 方法用以从数据库中删除单条记录

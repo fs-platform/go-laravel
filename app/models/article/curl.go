@@ -22,7 +22,7 @@ func Get(idstr string) (Article, error) {
 	return article, nil
 }
 
-func GetAll()([]Article,error)  {
+func GetAll() ([]Article, error) {
 	var articles []Article
 	if err := model.DB.Find(&articles).Error; err != nil {
 		return articles, err
@@ -38,4 +38,13 @@ func (article *Article) Create() (err error) {
 	}
 
 	return nil
+}
+
+func (article *Article) Update() (rowAffect int64, err error) {
+	result := model.DB.Save(&article)
+	if err = result.Error; err != nil {
+		logger.LogError(err)
+		return 0, err
+	}
+	return result.RowsAffected, nil
 }

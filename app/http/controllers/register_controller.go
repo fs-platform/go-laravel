@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"fmt"
+	"go_blog/app/models/user"
+	"go_blog/pkg/logger"
 	"go_blog/pkg/view"
 	"net/http"
 )
@@ -14,5 +16,19 @@ func (*RegisterController) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (*RegisterController) DoRegister(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(4)
+	name := r.PostFormValue("name")
+	email := r.PostFormValue("email")
+	password := r.PostFormValue("password")
+	_user := user.User{
+		Name:     name,
+		Email:    email,
+		Password: password,
+	}
+	err := _user.Create()
+	logger.LogError(err)
+	if _user.ID > 0 {
+		fmt.Fprintf(w, "插入成功，ID 为%d", _user.ID)
+	} else {
+		fmt.Fprint(w, "创建用户失败，请联系管理员")
+	}
 }

@@ -1,12 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>文章详情 —— 我的技术博客</title>
-</head>
-<body>
-<p>文章id:{{.ID}}</p>
-<p>文章标题:{{.Title}}</p>
-<p>文章内容:{{.Body}}</p>
+{{define "main"}}
+    <div class="col-md-9 blog-main">
 
-</body>
-</html>
+        <div class="blog-post bg-white p-5 rounded shadow mb-4">
+            <h3 class="blog-post-title">{{ .Title }}</h3>
+            <p class="blog-post-meta text-secondary">发布于 <a href="" class="font-weight-bold">2020-09-05</a> by <a
+                        href="#" class="font-weight-bold">Aron</a></p>
+
+            <hr>
+            {{ .Body }}
+        </div><!-- /.blog-post -->
+    </div>
+
+{{end}}

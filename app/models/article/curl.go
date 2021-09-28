@@ -1,6 +1,7 @@
 package article
 
 import (
+	"go_blog/app/models"
 	"go_blog/pkg/logger"
 	"go_blog/pkg/model"
 	"go_blog/pkg/types"
@@ -11,6 +12,7 @@ type Article struct {
 	ID    int
 	Title string
 	Body  string
+	models.BaseModel
 }
 
 func Get(idstr string) (Article, error) {

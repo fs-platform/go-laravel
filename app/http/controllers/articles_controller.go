@@ -6,11 +6,11 @@ import (
 	"go_blog/app/models/article"
 	"go_blog/pkg/logger"
 	"go_blog/pkg/route"
+	"go_blog/pkg/view"
 	"gorm.io/gorm"
 	"html/template"
 	"log"
 	"net/http"
-	"path/filepath"
 	"strconv"
 	"unicode/utf8"
 )
@@ -27,7 +27,6 @@ type ArticlesController struct {
 
 func (*ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 	var (
-		tmp *template.Template
 		err error
 	)
 	articles, err := article.GetAll()
@@ -38,12 +37,7 @@ func (*ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(w, "500 服务器内部错误")
 	} else {
-		viewDir := "resources/views"
-		files, err := filepath.Glob(viewDir + "/layouts/*.gohtml")
-		newFiles := append(files, viewDir+"/articles/index.gohtml")
-		tmp, err = template.ParseFiles(newFiles...)
-		logger.LogError(err)
-		err = tmp.ExecuteTemplate(w, "app", articles)
+		view.Render(w, "articles.index", articles)
 	}
 }
 
@@ -64,11 +58,7 @@ func (*ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	tmpl, err := template.ParseFiles("resources/views/articles/show.gohtml")
-	if err != nil {
-		log.Fatal(err)
-	}
-	tmpl.Execute(w, data)
+	view.Render(w, "articles.show", data)
 }
 
 func (*ArticlesController) Update(w http.ResponseWriter, r *http.Request) {

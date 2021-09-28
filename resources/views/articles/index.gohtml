@@ -1,26 +1,24 @@
-{{define  "app"}}
-<!DOCTYPE html>
-<html lang="en">
+{{define "main"}}
+    <div class="col-md-9 blog-main">
 
-<head>
-    <title>所有文章 —— 我的技术博客</title>
-    <link href="/css/bootstrap.min.css" rel="stylesheet">
-</head>
+        {{ range $key, $article := . }}
 
-<body>
+            <div class="blog-post bg-white p-5 rounded shadow mb-4">
+                <h3 class="blog-post-title"><a href="{{ $article.Link "articles.show"}}" class="text-dark text-decoration-none">{{ $article.Title }}</a></h3>
+                <p class="blog-post-meta text-secondary">发布于 <a href="" class="font-weight-bold">2020-09-05</a> by <a href="#" class="font-weight-bold">Aron</a></p>
 
-<div class="container-sm">
-    <div class="row mt-5">
+                <hr>
+                {{ $article.Body }}
 
-        {{template "sidebar" .}}
-        {{template "main" .}}
+            </div><!-- /.blog-post -->
+
+        {{ end }}
+
+
+        <nav class="blog-pagination mb-5">
+            <a class="btn btn-outline-primary" href="#">下一页</a>
+            <a class="btn btn-outline-secondary disabled" href="#" tabindex="-1" aria-disabled="true">上一页</a>
+        </nav>
 
     </div>
-</div>
-
-<script src="/js/bootstrap.min.js"></script>
-
-</body>
-
-</html>
 {{end}}

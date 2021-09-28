@@ -10,6 +10,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"unicode/utf8"
 )
@@ -29,8 +30,6 @@ func (*ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 		tmp *template.Template
 		err error
 	)
-	tmp, err = template.ParseFiles("resources/views/articles/index.gohtml")
-	logger.LogError(err)
 	articles, err := article.GetAll()
 	fmt.Println(articles)
 	if err != nil {
@@ -39,7 +38,12 @@ func (*ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(w, "500 服务器内部错误")
 	} else {
-		err = tmp.Execute(w, articles)
+		viewDir := "resources/views"
+		files, err := filepath.Glob(viewDir + "/layouts/*.gohtml")
+		newFiles := append(files, viewDir+"/articles/index.gohtml")
+		tmp, err = template.ParseFiles(newFiles...)
+		logger.LogError(err)
+		err = tmp.ExecuteTemplate(w, "app", articles)
 	}
 }
 

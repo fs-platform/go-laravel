@@ -9,7 +9,6 @@ import (
 	"go_blog/pkg/view"
 	"gorm.io/gorm"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 	"unicode/utf8"
@@ -137,14 +136,9 @@ func (*ArticlesController) Delete(w http.ResponseWriter, r *http.Request) {
 
 func (*ArticlesController) Create(w http.ResponseWriter, r *http.Request) {
 	storeUrl := route.RouteName2URL("articles.store")
-	tmpl, err := template.ParseFiles("resources/views/articles/create.gohtml")
-	if err != nil {
-		panic(err)
-	}
 	data := new(ArticlesFormData)
 	data.URL = storeUrl
-	err = tmpl.Execute(w, data)
-	logger.LogError(err)
+	view.Render(w, "articles.create", data)
 }
 
 func (*ArticlesController) Store(w http.ResponseWriter, r *http.Request) {
@@ -158,16 +152,10 @@ func (*ArticlesController) Store(w http.ResponseWriter, r *http.Request) {
 	errors := validateArticleFormData(title, body)
 	fmt.Println(errors)
 	if len(errors) != 0 {
-		storeUrl := route.RouteName2URL("articles.store")
-		tmpl, err := template.ParseFiles("resources/views/articles/create.gohtml")
-		if err != nil {
-			panic(err)
-		}
 		data := new(ArticlesFormData)
-		data.URL = storeUrl
 		data.Errors = errors
 		data.Body = body
-		tmpl.Execute(w, data)
+		view.Render(w, "articles.create", data)
 		return
 	}
 	_article := &article.Article{
@@ -183,10 +171,6 @@ func (*ArticlesController) Store(w http.ResponseWriter, r *http.Request) {
 }
 
 func (*ArticlesController) Edit(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("resources/views/articles/edit.gohtml")
-	if err != nil {
-		log.Fatal(err)
-	}
 	id := route.GetRouteVariable("id", r)
 	editUrl := route.RouteName2URL("articles.update", "id", id)
 	article, _ := article.Get(id)
@@ -196,8 +180,7 @@ func (*ArticlesController) Edit(w http.ResponseWriter, r *http.Request) {
 		Errors: map[string]string{},
 		URL:    editUrl,
 	}
-	err = tmpl.Execute(w, data)
-	logger.LogError(err)
+	view.Render(w, "articles.create", data)
 }
 
 func (*ArticlesController) About(w http.ResponseWriter, r *http.Request) {

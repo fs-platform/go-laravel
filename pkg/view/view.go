@@ -3,6 +3,7 @@ package view
 import (
 	"fmt"
 	"go_blog/pkg/logger"
+	"go_blog/pkg/route"
 	"html/template"
 	"io"
 	"path/filepath"
@@ -24,7 +25,9 @@ func Render(w io.Writer, name string, data interface{}) {
 	newFiles := append(files, viewDir+name+".gohtml")
 
 	// 5 解析所有模板文件
-	tmpl, err := template.New(name + ".gohtml").ParseFiles(newFiles...)
+	tmpl, err := template.New(name + ".gohtml").Funcs(template.FuncMap{
+		"RouteName2URL": route.RouteName2URL,
+	}).ParseFiles(newFiles...)
 	logger.LogError(err)
 	fmt.Println(data)
 	// 6 渲染模板

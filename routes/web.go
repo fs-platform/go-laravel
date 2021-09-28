@@ -9,6 +9,7 @@ import (
 
 func RegisterWebRouter(router *mux.Router) *mux.Router {
 	ArticleController := new(controllers.ArticlesController)
+	RegisterController := new(controllers.RegisterController)
 	router.HandleFunc("/", ArticleController.Index).Methods("GET").Name("articles.home")
 	router.HandleFunc("/articles/{id:[0-9]+}", ArticleController.Show).Methods("GET").Name("articles.show")
 	router.HandleFunc("/articles", ArticleController.Store).Methods("POST").Name("articles.store")
@@ -16,6 +17,7 @@ func RegisterWebRouter(router *mux.Router) *mux.Router {
 	router.HandleFunc("/articles/{id:[0-9]+}/edit", ArticleController.Edit).Methods("GET").Name("articles.edit")
 	router.HandleFunc("/articles/{id:[0-9]+}", ArticleController.Update).Methods("POST").Name("articles.update")
 	router.HandleFunc("/articles/{id:[0-9]+}/delete", ArticleController.Delete).Methods("GET").Name("articles.delete")
+	router.HandleFunc("/register", RegisterController.Register).Methods("GET").Name("auth.register")
 	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
 	router.PathPrefix("/css/").Handler(http.FileServer(http.Dir("./public")))
 	router.PathPrefix("/js/").Handler(http.FileServer(http.Dir("./public")))

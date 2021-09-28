@@ -22,7 +22,7 @@ func ConnectDB() *gorm.DB {
 
 	// 准备数据库连接池
 	DB, err = gorm.Open(config, &gorm.Config{
-		Logger: gormlogger.Default.LogMode(gormlogger.Info),
+		Logger: gormlogger.Default.LogMode(gormlogger.Warn),
 	})
 
 	logger.LogError(err)

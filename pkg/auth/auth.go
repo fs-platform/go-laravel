@@ -9,6 +9,9 @@ import (
 
 func _getUID() uint64 {
 	_uid := session.Get("uid")
+	if _uid == nil {
+		return 0
+	}
 	uid := _uid.(uint64)
 	if uid > 0 {
 		return uid

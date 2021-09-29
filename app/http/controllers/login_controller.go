@@ -29,3 +29,8 @@ func (*LoginController) DoLogin(w http.ResponseWriter, r *http.Request) {
 		}, "auth.login")
 	}
 }
+
+func (*LoginController) LoginOut(w http.ResponseWriter, r *http.Request) {
+	auth.Logout()
+	http.Redirect(w, r, "/", http.StatusFound)
+}

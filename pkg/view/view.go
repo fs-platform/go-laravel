@@ -30,7 +30,6 @@ func renderTemplate(w io.Writer, name string, data interface{}, tplFiles ...stri
 	// 3. 所有布局模板文件 Slice
 	layoutFiles, err := filepath.Glob(viewDir + "/" + "layouts/*.gohtml")
 	logger.LogError(err)
-
 	// 4. 合并所有文件
 	allFiles := append(layoutFiles, tplFiles...)
 	// 5 解析所有模板文件

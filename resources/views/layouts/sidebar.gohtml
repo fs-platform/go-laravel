@@ -28,7 +28,7 @@
             <ol class="list-unstyled">
                 {{if isLogin}}
                     <li><a href="{{ RouteName2URL "articles.create" }}">开始写作</a></li>
-                    <li><a href="">退出</a></li>
+                    <li><a href="{{ RouteName2URL "auth.loginOut" }}">退出</a></li>
                 {{else}}
                     <li><a href="#">关于我们</a></li>
                     <li><a href="{{RouteName2URL "auth.register"}}">注册</a></li>

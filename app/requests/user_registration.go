@@ -11,7 +11,7 @@ func ValidateRegistrationForm(data user.User) map[string][]string {
 	// 1. 定制认证规则
 	rules := govalidator.MapData{
 		"name":             []string{"required", "alpha_num", "between:3,20"},
-		"email":            []string{"required", "min:4", "max:30", "email"},
+		"email":            []string{"required", "min:4", "max:30", "email", "not_exists:users,email"},
 		"password":         []string{"required", "min:6"},
 		"password_confirm": []string{"required"},
 	}

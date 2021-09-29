@@ -9,6 +9,10 @@
                 <label for="name" class="col-md-4 col-form-label text-md-right">姓名</label>
                 <div class="col-md-6">
                     <input id="name" type="text" class="form-control" name="name" value="" required="" autofocus="">
+                    {{ with .Errors.name }}
+                        {{ template "invalid-feedback" . }}
+                    {{ end }}
+                </div>
                 </div>
             </div>
 
@@ -16,6 +20,9 @@
                 <label for="email" class="col-md-4 col-form-label text-md-right">E-mail</label>
                 <div class="col-md-6">
                     <input id="email" type="email" class="form-control" name="email" value="" required="">
+                    {{ with .Errors.email }}
+                        {{ template "invalid-feedback" . }}
+                    {{ end }}
                 </div>
             </div>
 
@@ -23,6 +30,9 @@
                 <label for="password" class="col-md-4 col-form-label text-md-right">密码</label>
                 <div class="col-md-6">
                     <input id="password" type="password" class="form-control" name="password" required="">
+                    {{ with .Errors.password }}
+                        {{ template "invalid-feedback" . }}
+                    {{ end }}
                 </div>
             </div>
 
@@ -30,6 +40,9 @@
                 <label for="password-confirm" class="col-md-4 col-form-label text-md-right">确认密码</label>
                 <div class="col-md-6">
                     <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required="">
+                    {{ with .Errors.password_confirm }}
+                        {{ template "invalid-feedback" . }}
+                    {{ end }}
                 </div>
             </div>
 

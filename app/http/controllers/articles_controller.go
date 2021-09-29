@@ -29,7 +29,6 @@ func (*ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 		err error
 	)
 	articles, err := article.GetAll()
-	fmt.Println(articles)
 	if err != nil {
 		// 数据库错误
 		logger.LogError(err)

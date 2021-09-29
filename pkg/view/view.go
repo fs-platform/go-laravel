@@ -15,21 +15,19 @@ func Render(w io.Writer, data interface{}, tplFiles ...string) {
 	renderTemplate(w, "app", data, tplFiles...)
 }
 
-func AuthRender(w io.Writer, data interface{}, tplFiles ...string)  {
+func AuthRender(w io.Writer, data interface{}, tplFiles ...string) {
 	renderTemplate(w, "auth", data, tplFiles...)
 }
 
 func renderTemplate(w io.Writer, name string, data interface{}, tplFiles ...string) {
 	// 1 设置模板相对路径
-	viewDir := "resources/views/"
-
+	viewDir := "./resources/views"
 	// 2. 遍历传参文件列表 Slice，设置正确的路径，支持 dir.filename 语法糖
 	for i, f := range tplFiles {
-		tplFiles[i] = viewDir + strings.Replace(f, ".", "/", -1) + ".gohtml"
+		tplFiles[i] = viewDir + "/" + strings.Replace(f, ".", "/", -1) + ".gohtml"
 	}
-
 	// 3. 所有布局模板文件 Slice
-	layoutFiles, err := filepath.Glob(viewDir + "layouts/*.gohtml")
+	layoutFiles, err := filepath.Glob(viewDir + "/" + "layouts/*.gohtml")
 	logger.LogError(err)
 
 	// 4. 合并所有文件

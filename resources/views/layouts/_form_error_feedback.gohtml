@@ -1,0 +1,7 @@
+{{define "invalid-feedback"}}
+    <div class="invalid-feedback" style="display: block">
+        {{ range $message := . }}
+            <p>{{ $message }}</p>
+        {{ end }}
+    </div>
+{{end}}

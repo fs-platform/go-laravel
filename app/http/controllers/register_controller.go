@@ -20,10 +20,12 @@ func (*RegisterController) DoRegister(w http.ResponseWriter, r *http.Request) {
 	name := r.PostFormValue("name")
 	email := r.PostFormValue("email")
 	password := r.PostFormValue("password")
+	password_confirmation := r.PostFormValue("password_confirmation")
 	_user := user.User{
-		Name:     name,
-		Email:    email,
-		Password: password,
+		Name:            name,
+		Email:           email,
+		Password:        password,
+		PasswordConfirm: password_confirmation,
 	}
 	errs := requests.ValidateRegistrationForm(_user)
 	fmt.Println(errs)

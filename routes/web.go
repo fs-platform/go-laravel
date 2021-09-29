@@ -22,7 +22,7 @@ func RegisterWebRouter(router *mux.Router) *mux.Router {
 	router.HandleFunc("/register", RegisterController.Register).Methods("GET").Name("auth.register")
 	router.HandleFunc("/doRegister", RegisterController.DoRegister).Methods("POST").Name("auth.doRegister")
 	router.HandleFunc("/login", LoginController.Login).Methods("GET").Name("auth.login")
-	router.HandleFunc("/doLogin", LoginController.Login).Methods("POST").Name("auth.doLogin")
+	router.HandleFunc("/doLogin", LoginController.DoLogin).Methods("POST").Name("auth.doLogin")
 	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
 	router.Use(middlewares.StartSession)
 	router.PathPrefix("/css/").Handler(http.FileServer(http.Dir("./public")))

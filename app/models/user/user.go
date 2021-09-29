@@ -22,3 +22,8 @@ func (user *User) Create() error {
 	}
 	return nil
 }
+
+// ComparePassword 对比密码是否匹配
+func (user User) ComparePassword(password string) bool {
+	return user.Password == password
+}

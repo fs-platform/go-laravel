@@ -24,6 +24,7 @@ func (*LoginController) DoLogin(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		view.AuthRender(w, view.D{
 			"Email":    email,
+			"Error": err.Error(),
 			"Password": password,
 		}, "auth.login")
 	}

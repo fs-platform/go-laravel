@@ -7,18 +7,18 @@ import (
 	"gorm.io/gorm"
 )
 
-func _getUID() string {
+func _getUID() uint64 {
 	_uid := session.Get("uid")
-	uid, ok := _uid.(string)
-	if ok && len(uid) > 0 {
+	uid := _uid.(uint64)
+	if uid > 0 {
 		return uid
 	}
-	return ""
+	return 0
 }
 
 func User() user.User {
 	uid := _getUID()
-	if len(uid) > 0 {
+	if uid > 0 {
 		_user, err := user.Get(uid)
 		if err == nil {
 			return _user
@@ -63,5 +63,5 @@ func Logout() {
 
 // Check 检测是否登录
 func Check() bool {
-	return len(_getUID()) > 0
+	return _getUID() > 0
 }

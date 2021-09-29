@@ -2,14 +2,12 @@ package user
 
 import (
 	"go_blog/pkg/model"
-	"go_blog/pkg/types"
 )
 
 // Get 通过 ID 获取用户
-func Get(idstr string) (User, error) {
+func Get(idstr uint64) (User, error) {
 	var user User
-	id := types.StringToInt(idstr)
-	if err := model.DB.First(&user, id).Error; err != nil {
+	if err := model.DB.First(&user, idstr).Error; err != nil {
 		return user, err
 	}
 	return user, nil

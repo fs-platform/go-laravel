@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"go_blog/pkg/auth"
 	"go_blog/pkg/view"
 	"net/http"
@@ -21,7 +20,6 @@ func (*LoginController) DoLogin(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
-		fmt.Println(err)
 		view.AuthRender(w, view.D{
 			"Email":    email,
 			"Error": err.Error(),

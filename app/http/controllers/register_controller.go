@@ -28,7 +28,6 @@ func (*RegisterController) DoRegister(w http.ResponseWriter, r *http.Request) {
 		PasswordConfirm: password_confirmation,
 	}
 	errs := requests.ValidateRegistrationForm(_user)
-	fmt.Println(errs)
 	if len(errs) > 0 {
 		// 3. 有错误发生，打印数据
 		view.AuthRender(w, view.D{

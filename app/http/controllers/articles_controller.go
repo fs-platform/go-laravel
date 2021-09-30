@@ -26,7 +26,8 @@ type ArticlesController struct {
 
 func (*ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 	var (
-		err error
+		err     error
+		results view.D
 	)
 	articles, err := article.GetAll()
 	if err != nil {
@@ -35,7 +36,10 @@ func (*ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(w, "500 服务器内部错误")
 	} else {
-		view.Render(w, articles, "articles.index")
+		results = view.D{
+			"articles": articles,
+		}
+		view.Render(w, results, "articles.index")
 	}
 }
 
@@ -56,7 +60,10 @@ func (*ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	view.Render(w, data, "articles.show")
+	result := view.D{
+		"article": data,
+	}
+	view.Render(w, result, "articles.show")
 }
 
 func (*ArticlesController) Update(w http.ResponseWriter, r *http.Request) {
@@ -137,7 +144,10 @@ func (*ArticlesController) Create(w http.ResponseWriter, r *http.Request) {
 	storeUrl := route.RouteName2URL("articles.store")
 	data := new(ArticlesFormData)
 	data.URL = storeUrl
-	view.Render(w, data, "articles.create")
+	result := view.D{
+		"article": data,
+	}
+	view.Render(w, result, "articles.create")
 }
 
 func (*ArticlesController) Store(w http.ResponseWriter, r *http.Request) {
@@ -154,7 +164,10 @@ func (*ArticlesController) Store(w http.ResponseWriter, r *http.Request) {
 		data := new(ArticlesFormData)
 		data.Errors = errors
 		data.Body = body
-		view.Render(w, data, "articles.create")
+		result := view.D{
+			"article": data,
+		}
+		view.Render(w, result, "articles.create")
 		return
 	}
 	_article := &article.Article{
@@ -179,7 +192,10 @@ func (*ArticlesController) Edit(w http.ResponseWriter, r *http.Request) {
 		Errors: map[string]string{},
 		URL:    editUrl,
 	}
-	view.Render(w, data, "articles.create")
+	result := view.D{
+		"article": data,
+	}
+	view.Render(w, result, "articles.create")
 }
 
 func (*ArticlesController) About(w http.ResponseWriter, r *http.Request) {

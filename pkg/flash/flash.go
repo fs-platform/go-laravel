@@ -8,7 +8,7 @@ import (
 type flashes map[string]interface{}
 
 var flashKey string = "_flash"
-
+//session 中存入 map 类型必需使用 gob
 func init() {
 	gob.Register(flashes{})
 }

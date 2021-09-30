@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+	"go_blog/pkg/config"
 	"go_blog/pkg/logger"
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
@@ -16,12 +18,22 @@ func ConnectDB() *gorm.DB {
 
 	var err error
 
-	config := mysql.New(mysql.Config{
-		DSN: "root:root@tcp(127.0.0.1:8889)/go_blog?charset=utf8&parseTime=True&loc=Local",
+	var (
+		host     = config.GetString("database.mysql.host")
+		port     = config.GetString("database.mysql.port")
+		database = config.GetString("database.mysql.database")
+		username = config.GetString("database.mysql.username")
+		password = config.GetString("database.mysql.password")
+		charset  = config.GetString("database.mysql.charset")
+	)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=%t&loc=%s",
+		username, password, host, port, database, charset, true, "Local")
+	gormConfig := mysql.New(mysql.Config{
+		DSN: dsn,
 	})
 
 	// 准备数据库连接池
-	DB, err = gorm.Open(config, &gorm.Config{
+	DB, err = gorm.Open(gormConfig, &gorm.Config{
 		Logger: gormlogger.Default.LogMode(gormlogger.Warn),
 	})
 
@@ -29,4 +41,3 @@ func ConnectDB() *gorm.DB {
 
 	return DB
 }
-

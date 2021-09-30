@@ -4,8 +4,14 @@ package main
 import (
 	"go_blog/app/http/middlewares"
 	"go_blog/bootstrap"
+	"go_blog/config"
 	"net/http"
 )
+
+func init() {
+	// 初始化配置信息
+	config.Initialize()
+}
 
 func main() {
 	router := bootstrap.SetupRoute()
